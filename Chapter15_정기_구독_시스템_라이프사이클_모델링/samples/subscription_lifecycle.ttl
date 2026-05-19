@@ -1,0 +1,270 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 15강 샘플: 정기 구독 라이프사이클 온톨로지
+
+############
+# Classes
+############
+
+ex:CustomerAccount a owl:Class .
+ex:Product a owl:Class .
+ex:SubscriptionPlan a owl:Class ;
+    rdfs:subClassOf ex:Product .
+ex:Subscription a owl:Class .
+ex:Payment a owl:Class .
+ex:BillingCycle a owl:Class .
+ex:SubscriptionState a owl:Class .
+ex:SubscriptionEvent a owl:Class .
+ex:StateTransition a owl:Class .
+ex:Action a owl:Class .
+
+############
+# Object Properties
+############
+
+ex:ownsSubscription a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Subscription .
+
+ex:hasPlan a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:SubscriptionPlan .
+
+ex:hasBillingCycle a owl:ObjectProperty ;
+    rdfs:domain ex:SubscriptionPlan ;
+    rdfs:range ex:BillingCycle .
+
+ex:hasCurrentState a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:SubscriptionState .
+
+ex:hasSubscriptionEvent a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:SubscriptionEvent .
+
+ex:causedByPayment a owl:ObjectProperty ;
+    rdfs:domain ex:SubscriptionEvent ;
+    rdfs:range ex:Payment .
+
+ex:fromState a owl:ObjectProperty ;
+    rdfs:domain ex:StateTransition ;
+    rdfs:range ex:SubscriptionState .
+
+ex:toState a owl:ObjectProperty ;
+    rdfs:domain ex:StateTransition ;
+    rdfs:range ex:SubscriptionState .
+
+ex:triggeredByEvent a owl:ObjectProperty ;
+    rdfs:domain ex:StateTransition ;
+    rdfs:range ex:SubscriptionEvent .
+
+ex:availableAction a owl:ObjectProperty ;
+    rdfs:range ex:Action .
+
+ex:requiredAction a owl:ObjectProperty ;
+    rdfs:domain ex:StateTransition ;
+    rdfs:range ex:Action .
+
+############
+# Data Properties
+############
+
+ex:name a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:price a owl:DatatypeProperty ;
+    rdfs:domain ex:Product ;
+    rdfs:range xsd:decimal .
+
+ex:paymentStatus a owl:DatatypeProperty ;
+    rdfs:domain ex:Payment ;
+    rdfs:range xsd:string .
+
+ex:amount a owl:DatatypeProperty ;
+    rdfs:domain ex:Payment ;
+    rdfs:range xsd:decimal .
+
+ex:startDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:endDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:renewalDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:trialEndDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:gracePeriodUntil a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:pausedAt a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:dateTime .
+
+ex:cancelledAt a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:dateTime .
+
+ex:eventType a owl:DatatypeProperty ;
+    rdfs:domain ex:SubscriptionEvent ;
+    rdfs:range xsd:string .
+
+ex:occurredAt a owl:DatatypeProperty ;
+    rdfs:domain ex:SubscriptionEvent ;
+    rdfs:range xsd:dateTime .
+
+ex:allowsAccess a owl:DatatypeProperty ;
+    rdfs:domain ex:SubscriptionState ;
+    rdfs:range xsd:boolean .
+
+ex:isTerminal a owl:DatatypeProperty ;
+    rdfs:domain ex:SubscriptionState ;
+    rdfs:range xsd:boolean .
+
+ex:condition a owl:DatatypeProperty ;
+    rdfs:domain ex:StateTransition ;
+    rdfs:range xsd:string .
+
+############
+# States
+############
+
+ex:CreatedState a ex:SubscriptionState ;
+    ex:name "CREATED" ;
+    ex:allowsAccess false ;
+    ex:isTerminal false .
+
+ex:PaymentPendingState a ex:SubscriptionState ;
+    ex:name "PAYMENT_PENDING" ;
+    ex:allowsAccess false ;
+    ex:isTerminal false .
+
+ex:ActiveState a ex:SubscriptionState ;
+    ex:name "ACTIVE" ;
+    ex:allowsAccess true ;
+    ex:isTerminal false .
+
+ex:GracePeriodState a ex:SubscriptionState ;
+    ex:name "GRACE_PERIOD" ;
+    ex:allowsAccess true ;
+    ex:isTerminal false .
+
+ex:PausedState a ex:SubscriptionState ;
+    ex:name "PAUSED" ;
+    ex:allowsAccess false ;
+    ex:isTerminal false .
+
+ex:CancelledState a ex:SubscriptionState ;
+    ex:name "CANCELLED" ;
+    ex:allowsAccess false ;
+    ex:isTerminal true .
+
+############
+# Actions
+############
+
+ex:RequestPayment a ex:Action ; ex:name "결제 요청" .
+ex:ActivateSubscription a ex:Action ; ex:name "구독 활성화" .
+ex:RetryPayment a ex:Action ; ex:name "결제 재시도" .
+ex:NotifyPaymentFailure a ex:Action ; ex:name "결제 실패 알림" .
+ex:RestoreSubscription a ex:Action ; ex:name "구독 복구" .
+ex:FinalizeCancellation a ex:Action ; ex:name "해지 확정" .
+ex:PauseSubscription a ex:Action ; ex:name "구독 일시정지" .
+ex:ResumeSubscription a ex:Action ; ex:name "구독 재개" .
+
+############
+# State Transitions
+############
+
+ex:TransitionCreatedToPending a ex:StateTransition ;
+    ex:fromState ex:CreatedState ;
+    ex:toState ex:PaymentPendingState ;
+    ex:condition "PaymentRequested event occurs" ;
+    ex:requiredAction ex:RequestPayment .
+
+ex:TransitionPendingToActive a ex:StateTransition ;
+    ex:fromState ex:PaymentPendingState ;
+    ex:toState ex:ActiveState ;
+    ex:condition "Payment.status = CAPTURED" ;
+    ex:requiredAction ex:ActivateSubscription .
+
+ex:TransitionActiveToGrace a ex:StateTransition ;
+    ex:fromState ex:ActiveState ;
+    ex:toState ex:GracePeriodState ;
+    ex:condition "Renewal payment failed" ;
+    ex:requiredAction ex:RetryPayment ;
+    ex:requiredAction ex:NotifyPaymentFailure .
+
+ex:TransitionGraceToCancelled a ex:StateTransition ;
+    ex:fromState ex:GracePeriodState ;
+    ex:toState ex:CancelledState ;
+    ex:condition "gracePeriodUntil < today" ;
+    ex:requiredAction ex:FinalizeCancellation .
+
+ex:TransitionActiveToPaused a ex:StateTransition ;
+    ex:fromState ex:ActiveState ;
+    ex:toState ex:PausedState ;
+    ex:condition "PauseRequested event occurs" ;
+    ex:requiredAction ex:PauseSubscription .
+
+ex:TransitionPausedToActive a ex:StateTransition ;
+    ex:fromState ex:PausedState ;
+    ex:toState ex:ActiveState ;
+    ex:condition "ResumeRequested event occurs" ;
+    ex:requiredAction ex:ResumeSubscription .
+
+############
+# Example Instances
+############
+
+ex:MonthlyCycle a ex:BillingCycle ;
+    ex:name "MONTHLY" .
+
+ex:PremiumPlan_001 a ex:SubscriptionPlan ;
+    ex:name "프리미엄 구독 플랜" ;
+    ex:price "29000.00"^^xsd:decimal ;
+    ex:hasBillingCycle ex:MonthlyCycle .
+
+ex:Account_001 a ex:CustomerAccount ;
+    ex:ownsSubscription ex:Subscription_2001 .
+
+ex:Subscription_2001 a ex:Subscription ;
+    ex:hasPlan ex:PremiumPlan_001 ;
+    ex:hasCurrentState ex:GracePeriodState ;
+    ex:startDate "2026-05-01"^^xsd:date ;
+    ex:renewalDate "2026-06-01"^^xsd:date ;
+    ex:gracePeriodUntil "2026-06-08"^^xsd:date ;
+    ex:hasSubscriptionEvent ex:Event_001 ;
+    ex:hasSubscriptionEvent ex:Event_002 ;
+    ex:availableAction ex:RetryPayment ;
+    ex:availableAction ex:NotifyPaymentFailure .
+
+ex:Payment_9001 a ex:Payment ;
+    ex:paymentStatus "FAILED" ;
+    ex:amount "29000.00"^^xsd:decimal .
+
+ex:Event_001 a ex:SubscriptionEvent ;
+    ex:eventType "SubscriptionCreated" ;
+    ex:occurredAt "2026-05-01T10:00:00"^^xsd:dateTime .
+
+ex:Event_002 a ex:SubscriptionEvent ;
+    ex:eventType "RenewalPaymentFailed" ;
+    ex:occurredAt "2026-06-01T09:00:00"^^xsd:dateTime ;
+    ex:causedByPayment ex:Payment_9001 .
+
+# 검증 아이디어:
+# - Subscription은 정확히 하나의 currentState를 가져야 한다.
+# - ACTIVE 상태의 Subscription은 renewalDate를 가져야 한다.
+# - GRACE_PERIOD 상태의 Subscription은 gracePeriodUntil을 가져야 한다.
+# - CANCELLED 상태의 Subscription은 cancelledAt을 가져야 한다.

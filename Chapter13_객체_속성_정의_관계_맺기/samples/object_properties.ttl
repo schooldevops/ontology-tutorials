@@ -1,0 +1,218 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 13강 샘플: 통합 커머스 플랫폼 객체 속성 정의
+
+############
+# Classes
+############
+
+ex:Person a owl:Class .
+ex:CustomerAccount a owl:Class .
+ex:Role a owl:Class .
+ex:Product a owl:Class .
+ex:SubscriptionPlan a owl:Class ;
+    rdfs:subClassOf ex:Product .
+ex:Order a owl:Class .
+ex:OrderItem a owl:Class .
+ex:Payment a owl:Class .
+ex:Subscription a owl:Class .
+ex:Event a owl:Class .
+ex:CampaignEvent a owl:Class ;
+    rdfs:subClassOf ex:Event .
+ex:CustomerSegment a owl:Class .
+ex:CSTicket a owl:Class .
+ex:EventParticipation a owl:Class .
+ex:Channel a owl:Class .
+
+############
+# Core Object Properties
+############
+
+ex:ownsAccount a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CustomerAccount ;
+    rdfs:label "계정을 소유한다"@ko .
+
+ex:playsRole a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Role ;
+    rdfs:label "역할을 가진다"@ko .
+
+ex:placesOrder a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Order ;
+    owl:inverseOf ex:orderedBy ;
+    rdfs:label "주문한다"@ko .
+
+ex:orderedBy a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:CustomerAccount ;
+    rdfs:label "주문자이다"@ko .
+
+ex:containsProduct a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Product ;
+    rdfs:label "상품을 포함한다"@ko .
+
+ex:paidBy a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Payment ;
+    rdfs:label "결제로 처리된다"@ko .
+
+ex:ownsSubscription a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Subscription ;
+    rdfs:label "구독을 소유한다"@ko .
+
+ex:hasPlan a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:SubscriptionPlan ;
+    rdfs:label "플랜을 가진다"@ko .
+
+ex:participatesIn a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:Event ;
+    rdfs:label "이벤트에 참여한다"@ko .
+
+ex:targets a owl:ObjectProperty ;
+    rdfs:domain ex:CampaignEvent ;
+    rdfs:range ex:CustomerSegment ;
+    rdfs:label "세그먼트를 타겟팅한다"@ko .
+
+ex:belongsToSegment a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:CustomerSegment ;
+    rdfs:label "세그먼트에 속한다"@ko .
+
+ex:raisesTicket a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CSTicket ;
+    rdfs:label "티켓을 생성한다"@ko .
+
+ex:relatedToOrder a owl:ObjectProperty ;
+    rdfs:domain ex:CSTicket ;
+    rdfs:range ex:Order ;
+    rdfs:label "주문과 관련된다"@ko .
+
+ex:relatedToSubscription a owl:ObjectProperty ;
+    rdfs:domain ex:CSTicket ;
+    rdfs:range ex:Subscription ;
+    rdfs:label "구독과 관련된다"@ko .
+
+############
+# Reified Relationship Properties
+############
+
+ex:hasOrderItem a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:OrderItem .
+
+ex:itemProduct a owl:ObjectProperty ;
+    rdfs:domain ex:OrderItem ;
+    rdfs:range ex:Product .
+
+ex:hasEventParticipation a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:EventParticipation .
+
+ex:participationEvent a owl:ObjectProperty ;
+    rdfs:domain ex:EventParticipation ;
+    rdfs:range ex:Event .
+
+ex:participationChannel a owl:ObjectProperty ;
+    rdfs:domain ex:EventParticipation ;
+    rdfs:range ex:Channel .
+
+ex:convertedTo a owl:ObjectProperty ;
+    rdfs:domain ex:EventParticipation ;
+    rdfs:range ex:Subscription .
+
+############
+# Data Properties
+############
+
+ex:name a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:status a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:quantity a owl:DatatypeProperty ;
+    rdfs:domain ex:OrderItem ;
+    rdfs:range xsd:integer .
+
+ex:unitPrice a owl:DatatypeProperty ;
+    rdfs:domain ex:OrderItem ;
+    rdfs:range xsd:decimal .
+
+ex:participatedAt a owl:DatatypeProperty ;
+    rdfs:domain ex:EventParticipation ;
+    rdfs:range xsd:dateTime .
+
+############
+# Example Graph
+############
+
+ex:Person_001 a ex:Person ;
+    ex:name "김민준" ;
+    ex:ownsAccount ex:Account_001 ;
+    ex:participatesIn ex:Event_NewCoupon ;
+    ex:hasEventParticipation ex:Participation_001 ;
+    ex:raisesTicket ex:Ticket_7001 .
+
+ex:Account_001 a ex:CustomerAccount ;
+    ex:status "ACTIVE" ;
+    ex:placesOrder ex:Order_1001 ;
+    ex:ownsSubscription ex:Subscription_2001 ;
+    ex:belongsToSegment ex:NewUserSegment_001 .
+
+ex:PremiumPlan_001 a ex:SubscriptionPlan ;
+    ex:name "프리미엄 구독 플랜" .
+
+ex:Order_1001 a ex:Order ;
+    ex:status "PAID" ;
+    ex:containsProduct ex:PremiumPlan_001 ;
+    ex:hasOrderItem ex:OrderItem_001 ;
+    ex:paidBy ex:Payment_5001 .
+
+ex:OrderItem_001 a ex:OrderItem ;
+    ex:itemProduct ex:PremiumPlan_001 ;
+    ex:quantity 1 ;
+    ex:unitPrice "29000.00"^^xsd:decimal .
+
+ex:Payment_5001 a ex:Payment ;
+    ex:status "CAPTURED" .
+
+ex:Subscription_2001 a ex:Subscription ;
+    ex:status "ACTIVE" ;
+    ex:hasPlan ex:PremiumPlan_001 .
+
+ex:Event_NewCoupon a ex:CampaignEvent ;
+    ex:name "신규 가입 쿠폰 이벤트" ;
+    ex:targets ex:NewUserSegment_001 .
+
+ex:NewUserSegment_001 a ex:CustomerSegment ;
+    ex:name "신규 가입 고객군" .
+
+ex:MobileApp a ex:Channel ;
+    ex:name "모바일 앱" .
+
+ex:Participation_001 a ex:EventParticipation ;
+    ex:participationEvent ex:Event_NewCoupon ;
+    ex:participationChannel ex:MobileApp ;
+    ex:convertedTo ex:Subscription_2001 ;
+    ex:participatedAt "2026-05-01T09:00:00"^^xsd:dateTime .
+
+ex:Ticket_7001 a ex:CSTicket ;
+    ex:status "OPEN" ;
+    ex:relatedToOrder ex:Order_1001 ;
+    ex:relatedToSubscription ex:Subscription_2001 .
+
+# 확인 포인트:
+# - placesOrder와 orderedBy는 역관계다.
+# - OrderItem은 주문-상품 관계에 수량과 단가를 붙이기 위한 중간 객체다.
+# - EventParticipation은 이벤트 참여 관계에 채널, 참여 시각, 전환 결과를 붙이기 위한 중간 객체다.

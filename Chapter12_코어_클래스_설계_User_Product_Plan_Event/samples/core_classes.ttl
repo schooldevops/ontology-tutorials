@@ -1,0 +1,276 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 12강 샘플: 통합 커머스 플랫폼 코어 클래스 스키마
+
+############
+# People and Accounts
+############
+
+ex:Person a owl:Class ;
+    rdfs:label "사람"@ko .
+
+ex:User a owl:Class ;
+    rdfs:subClassOf ex:Person ;
+    rdfs:label "서비스 사용자"@ko .
+
+ex:CustomerAccount a owl:Class ;
+    rdfs:label "고객 계정"@ko .
+
+ex:Role a owl:Class ;
+    rdfs:label "역할"@ko .
+
+ex:BuyerRole a owl:Class ;
+    rdfs:subClassOf ex:Role ;
+    rdfs:label "구매자 역할"@ko .
+
+ex:SubscriberRole a owl:Class ;
+    rdfs:subClassOf ex:Role ;
+    rdfs:label "구독자 역할"@ko .
+
+ex:RequesterRole a owl:Class ;
+    rdfs:subClassOf ex:Role ;
+    rdfs:label "문의자 역할"@ko .
+
+############
+# Product and Plan
+############
+
+ex:Product a owl:Class ;
+    rdfs:label "상품"@ko .
+
+ex:PhysicalProduct a owl:Class ;
+    rdfs:subClassOf ex:Product ;
+    rdfs:label "실물 상품"@ko .
+
+ex:DigitalProduct a owl:Class ;
+    rdfs:subClassOf ex:Product ;
+    rdfs:label "디지털 상품"@ko .
+
+ex:Device a owl:Class ;
+    rdfs:subClassOf ex:PhysicalProduct ;
+    rdfs:label "기기"@ko .
+
+ex:Accessory a owl:Class ;
+    rdfs:subClassOf ex:PhysicalProduct ;
+    rdfs:label "액세서리"@ko .
+
+ex:SubscriptionPlan a owl:Class ;
+    rdfs:subClassOf ex:Product ;
+    rdfs:label "구독 플랜"@ko .
+
+ex:BasicPlan a owl:Class ;
+    rdfs:subClassOf ex:SubscriptionPlan ;
+    rdfs:label "베이직 플랜"@ko .
+
+ex:PremiumPlan a owl:Class ;
+    rdfs:subClassOf ex:SubscriptionPlan ;
+    rdfs:label "프리미엄 플랜"@ko .
+
+############
+# Transaction and Subscription
+############
+
+ex:Transaction a owl:Class ;
+    rdfs:label "거래"@ko .
+
+ex:Order a owl:Class ;
+    rdfs:subClassOf ex:Transaction ;
+    rdfs:label "주문"@ko .
+
+ex:Payment a owl:Class ;
+    rdfs:subClassOf ex:Transaction ;
+    rdfs:label "결제"@ko .
+
+ex:Subscription a owl:Class ;
+    rdfs:label "구독 상태"@ko .
+
+############
+# Event and Segment
+############
+
+ex:Event a owl:Class ;
+    rdfs:label "이벤트"@ko .
+
+ex:CampaignEvent a owl:Class ;
+    rdfs:subClassOf ex:Event ;
+    rdfs:label "캠페인 이벤트"@ko .
+
+ex:AcquisitionCampaign a owl:Class ;
+    rdfs:subClassOf ex:CampaignEvent ;
+    rdfs:label "신규 유입 캠페인"@ko .
+
+ex:RetentionCampaign a owl:Class ;
+    rdfs:subClassOf ex:CampaignEvent ;
+    rdfs:label "유지 캠페인"@ko .
+
+ex:PromotionEvent a owl:Class ;
+    rdfs:subClassOf ex:Event ;
+    rdfs:label "프로모션 이벤트"@ko .
+
+ex:CouponEvent a owl:Class ;
+    rdfs:subClassOf ex:PromotionEvent ;
+    rdfs:label "쿠폰 이벤트"@ko .
+
+ex:DiscountEvent a owl:Class ;
+    rdfs:subClassOf ex:PromotionEvent ;
+    rdfs:label "할인 이벤트"@ko .
+
+ex:CustomerSegment a owl:Class ;
+    rdfs:label "고객 세그먼트"@ko .
+
+ex:NewUserSegment a owl:Class ;
+    rdfs:subClassOf ex:CustomerSegment ;
+    rdfs:label "신규 고객 세그먼트"@ko .
+
+ex:VIPSegment a owl:Class ;
+    rdfs:subClassOf ex:CustomerSegment ;
+    rdfs:label "VIP 세그먼트"@ko .
+
+ex:ChurnRiskSegment a owl:Class ;
+    rdfs:subClassOf ex:CustomerSegment ;
+    rdfs:label "이탈 위험 세그먼트"@ko .
+
+ex:CSTicket a owl:Class ;
+    rdfs:label "CS 티켓"@ko .
+
+############
+# Object Properties
+############
+
+ex:ownsAccount a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CustomerAccount .
+
+ex:playsRole a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Role .
+
+ex:placesOrder a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Order ;
+    owl:inverseOf ex:orderedBy .
+
+ex:orderedBy a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:CustomerAccount .
+
+ex:containsProduct a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Product .
+
+ex:paidBy a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Payment .
+
+ex:ownsSubscription a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Subscription .
+
+ex:hasPlan a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:SubscriptionPlan .
+
+ex:participatesIn a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:Event .
+
+ex:targets a owl:ObjectProperty ;
+    rdfs:domain ex:CampaignEvent ;
+    rdfs:range ex:CustomerSegment .
+
+ex:belongsToSegment a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:CustomerSegment .
+
+ex:raisesTicket a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CSTicket .
+
+############
+# Data Properties
+############
+
+ex:name a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:status a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:price a owl:DatatypeProperty ;
+    rdfs:domain ex:Product ;
+    rdfs:range xsd:decimal .
+
+ex:orderedAt a owl:DatatypeProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range xsd:dateTime .
+
+ex:paidAt a owl:DatatypeProperty ;
+    rdfs:domain ex:Payment ;
+    rdfs:range xsd:dateTime .
+
+ex:startDate a owl:DatatypeProperty ;
+    rdfs:range xsd:date .
+
+ex:endDate a owl:DatatypeProperty ;
+    rdfs:range xsd:date .
+
+############
+# Example Individuals
+############
+
+ex:Person_001 a ex:User ;
+    ex:name "김민준" ;
+    ex:ownsAccount ex:Account_001 ;
+    ex:participatesIn ex:Event_NewCoupon ;
+    ex:raisesTicket ex:Ticket_7001 .
+
+ex:Account_001 a ex:CustomerAccount ;
+    ex:status "ACTIVE" ;
+    ex:playsRole ex:Role_Buyer_001 ;
+    ex:playsRole ex:Role_Subscriber_001 ;
+    ex:placesOrder ex:Order_1001 ;
+    ex:ownsSubscription ex:Subscription_2001 ;
+    ex:belongsToSegment ex:NewUserSegment_001 .
+
+ex:Role_Buyer_001 a ex:BuyerRole .
+ex:Role_Subscriber_001 a ex:SubscriberRole .
+
+ex:PremiumPlan_001 a ex:PremiumPlan ;
+    ex:name "프리미엄 구독 플랜" ;
+    ex:price "29000.00"^^xsd:decimal .
+
+ex:Order_1001 a ex:Order ;
+    ex:status "PAID" ;
+    ex:orderedAt "2026-05-01T10:30:00"^^xsd:dateTime ;
+    ex:containsProduct ex:PremiumPlan_001 ;
+    ex:paidBy ex:Payment_5001 .
+
+ex:Payment_5001 a ex:Payment ;
+    ex:status "CAPTURED" ;
+    ex:paidAt "2026-05-01T10:31:00"^^xsd:dateTime .
+
+ex:Subscription_2001 a ex:Subscription ;
+    ex:status "ACTIVE" ;
+    ex:startDate "2026-05-01"^^xsd:date ;
+    ex:hasPlan ex:PremiumPlan_001 .
+
+ex:Event_NewCoupon a ex:AcquisitionCampaign ;
+    ex:name "신규 가입 쿠폰 이벤트" ;
+    ex:startDate "2026-05-01"^^xsd:date ;
+    ex:endDate "2026-05-31"^^xsd:date ;
+    ex:targets ex:NewUserSegment_001 .
+
+ex:NewUserSegment_001 a ex:NewUserSegment ;
+    ex:name "신규 가입 고객군" .
+
+ex:Ticket_7001 a ex:CSTicket ;
+    ex:status "OPEN" .
+
+# 확인 포인트:
+# - PremiumPlan_001은 PremiumPlan, SubscriptionPlan, Product로 추론될 수 있다.
+# - Person_001은 이벤트 참여자이면서 CS 티켓 생성자다.
+# - Account_001은 주문과 구독 상태를 모두 가진다.

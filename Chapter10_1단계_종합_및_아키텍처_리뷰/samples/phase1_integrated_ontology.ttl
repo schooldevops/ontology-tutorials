@@ -1,0 +1,238 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 10강 샘플: Phase 1 개념을 통합한 미니 온톨로지
+
+############
+# Core Classes
+############
+
+ex:Person a rdfs:Class .
+ex:CustomerAccount a rdfs:Class .
+ex:Product a rdfs:Class .
+ex:SubscriptionPlan a rdfs:Class ;
+    rdfs:subClassOf ex:Product .
+ex:Order a rdfs:Class .
+ex:Subscription a rdfs:Class .
+ex:CSTicket a rdfs:Class .
+ex:CampaignEvent a rdfs:Class .
+ex:Supplier a rdfs:Class .
+ex:Part a rdfs:Class .
+ex:InventoryItem a rdfs:Class .
+ex:SubscriptionBundle a rdfs:Class .
+ex:RiskSignal a rdfs:Class .
+ex:Rule a rdfs:Class .
+ex:Action a rdfs:Class .
+ex:WorkflowCase a rdfs:Class .
+ex:ExternalSystem a rdfs:Class .
+
+############
+# Object Properties
+############
+
+ex:ownsAccount a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CustomerAccount .
+
+ex:placesOrder a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Order ;
+    owl:inverseOf ex:orderedBy .
+
+ex:orderedBy a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:CustomerAccount .
+
+ex:ownsSubscription a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Subscription .
+
+ex:hasPlan a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:SubscriptionPlan .
+
+ex:raisesTicket a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CSTicket .
+
+ex:participatesIn a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CampaignEvent .
+
+ex:influences a owl:ObjectProperty ;
+    rdfs:domain ex:CampaignEvent ;
+    rdfs:range ex:Subscription .
+
+ex:supplies a owl:ObjectProperty ;
+    rdfs:domain ex:Supplier ;
+    rdfs:range ex:Part .
+
+ex:usedIn a owl:ObjectProperty ;
+    rdfs:domain ex:Part ;
+    rdfs:range ex:Product .
+
+ex:includedIn a owl:ObjectProperty ;
+    rdfs:domain ex:Product ;
+    rdfs:range ex:SubscriptionBundle .
+
+ex:assignedTo a owl:ObjectProperty ;
+    rdfs:domain ex:SubscriptionBundle ;
+    rdfs:range ex:Subscription .
+
+ex:hasRiskSignal a owl:ObjectProperty ;
+    rdfs:range ex:RiskSignal .
+
+ex:availableAction a owl:ObjectProperty ;
+    rdfs:range ex:Action .
+
+ex:triggeredByRule a owl:ObjectProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range ex:Rule .
+
+ex:writesBackTo a owl:ObjectProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range ex:ExternalSystem .
+
+ex:hasWorkflowCase a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:WorkflowCase .
+
+############
+# Data Properties
+############
+
+ex:name a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:status a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:tier a owl:DatatypeProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range xsd:string .
+
+ex:riskLevel a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:renewalDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:category a owl:DatatypeProperty ;
+    rdfs:domain ex:CSTicket ;
+    rdfs:range xsd:string .
+
+ex:condition a owl:DatatypeProperty ;
+    rdfs:domain ex:Rule ;
+    rdfs:range xsd:string .
+
+ex:result a owl:DatatypeProperty ;
+    rdfs:domain ex:Rule ;
+    rdfs:range xsd:string .
+
+ex:precondition a owl:DatatypeProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range xsd:string .
+
+ex:effect a owl:DatatypeProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range xsd:string .
+
+############
+# Rules
+############
+
+ex:VIPRetentionRiskRule a ex:Rule ;
+    ex:condition "Customer.tier = VIP and Subscription.renewalDate <= 14 days and CSTicket.category = DELIVERY_DELAY" ;
+    ex:result "Customer.priority = CRITICAL" .
+
+ex:SupplyRiskPropagationRule a ex:Rule ;
+    ex:condition "Supplier.status = DELAYED and Part usedIn Product and Product includedIn Bundle" ;
+    ex:result "Bundle.fulfillmentRisk = HIGH" .
+
+############
+# Actions and Systems
+############
+
+ex:CRMSystem a ex:ExternalSystem ;
+    ex:name "CRM" .
+
+ex:CSSystem a ex:ExternalSystem ;
+    ex:name "CS" .
+
+ex:NotifyImpactedCustomer a ex:Action ;
+    ex:triggeredByRule ex:SupplyRiskPropagationRule ;
+    ex:precondition "Customer.riskLevel = CRITICAL" ;
+    ex:effect "Customer notification is sent" ;
+    ex:writesBackTo ex:CRMSystem .
+
+ex:EscalateTicket a ex:Action ;
+    ex:triggeredByRule ex:VIPRetentionRiskRule ;
+    ex:precondition "CSTicket.status = OPEN" ;
+    ex:effect "Ticket priority becomes CRITICAL" ;
+    ex:writesBackTo ex:CSSystem .
+
+############
+# Example Integrated Graph
+############
+
+ex:Person_001 a ex:Person ;
+    ex:name "박지훈" ;
+    ex:ownsAccount ex:Account_001 ;
+    ex:participatesIn ex:Campaign_NewCoupon ;
+    ex:raisesTicket ex:Ticket_7001 .
+
+ex:Account_001 a ex:CustomerAccount ;
+    ex:tier "VIP" ;
+    ex:riskLevel "CRITICAL" ;
+    ex:ownsSubscription ex:Subscription_1001 ;
+    ex:placesOrder ex:Order_9001 ;
+    ex:hasWorkflowCase ex:Workflow_9001 ;
+    ex:availableAction ex:NotifyImpactedCustomer .
+
+ex:Order_9001 a ex:Order ;
+    ex:status "PAID" .
+
+ex:Subscription_1001 a ex:Subscription ;
+    ex:status "ACTIVE" ;
+    ex:renewalDate "2026-06-01"^^xsd:date ;
+    ex:hasPlan ex:PremiumPlan .
+
+ex:PremiumPlan a ex:SubscriptionPlan ;
+    ex:name "프리미엄 구독 플랜" .
+
+ex:Campaign_NewCoupon a ex:CampaignEvent ;
+    ex:name "신규 가입 쿠폰 이벤트" ;
+    ex:influences ex:Subscription_1001 .
+
+ex:Ticket_7001 a ex:CSTicket ;
+    ex:status "OPEN" ;
+    ex:category "DELIVERY_DELAY" ;
+    ex:availableAction ex:EscalateTicket .
+
+ex:SupplierA a ex:Supplier ;
+    ex:status "DELAYED" ;
+    ex:supplies ex:BluetoothModule .
+
+ex:BluetoothModule a ex:Part ;
+    ex:usedIn ex:WirelessKeyboard .
+
+ex:WirelessKeyboard a ex:Product ;
+    ex:includedIn ex:PremiumWorkBundle .
+
+ex:PremiumWorkBundle a ex:SubscriptionBundle ;
+    ex:status "FULFILLMENT_RISK" ;
+    ex:assignedTo ex:Subscription_1001 .
+
+ex:Workflow_9001 a ex:WorkflowCase ;
+    ex:status "CRITICAL_CUSTOMER_REVIEW" .
+
+# 이 예제는 Phase 1의 주요 개념을 한 그래프에 모은다.
+# - RDFS/OWL 클래스와 속성
+# - inverseOf 관계
+# - 고객/구독/CS/캠페인 연결
+# - 공급망 리스크 전파 경로
+# - Rule, Action, Write-back 시스템

@@ -1,0 +1,199 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 14강 샘플: 데이터 속성과 제약 조건 예제
+
+############
+# Classes
+############
+
+ex:Product a owl:Class .
+ex:SubscriptionPlan a owl:Class ;
+    rdfs:subClassOf ex:Product .
+ex:Order a owl:Class .
+ex:OrderItem a owl:Class .
+ex:Payment a owl:Class .
+ex:Subscription a owl:Class .
+ex:Event a owl:Class .
+ex:CampaignEvent a owl:Class ;
+    rdfs:subClassOf ex:Event .
+ex:CustomerAccount a owl:Class .
+
+############
+# Object Properties
+############
+
+ex:containsProduct a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Product .
+
+ex:hasOrderItem a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:OrderItem .
+
+ex:itemProduct a owl:ObjectProperty ;
+    rdfs:domain ex:OrderItem ;
+    rdfs:range ex:Product .
+
+ex:paidBy a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Payment .
+
+ex:ownsSubscription a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Subscription .
+
+ex:hasPlan a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:SubscriptionPlan .
+
+############
+# Data Properties
+############
+
+ex:name a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:price a owl:DatatypeProperty ;
+    rdfs:domain ex:Product ;
+    rdfs:range xsd:decimal .
+
+ex:currency a owl:DatatypeProperty ;
+    rdfs:domain ex:Product ;
+    rdfs:range xsd:string .
+
+ex:billingCycle a owl:DatatypeProperty ;
+    rdfs:domain ex:SubscriptionPlan ;
+    rdfs:range xsd:string .
+
+ex:orderStatus a owl:DatatypeProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range xsd:string .
+
+ex:orderedAt a owl:DatatypeProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range xsd:dateTime .
+
+ex:paymentStatus a owl:DatatypeProperty ;
+    rdfs:domain ex:Payment ;
+    rdfs:range xsd:string .
+
+ex:amount a owl:DatatypeProperty ;
+    rdfs:domain ex:Payment ;
+    rdfs:range xsd:decimal .
+
+ex:paidAt a owl:DatatypeProperty ;
+    rdfs:domain ex:Payment ;
+    rdfs:range xsd:dateTime .
+
+ex:subscriptionStatus a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:string .
+
+ex:startDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:endDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:renewalDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:eventStartDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Event ;
+    rdfs:range xsd:date .
+
+ex:eventEndDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Event ;
+    rdfs:range xsd:date .
+
+ex:quantity a owl:DatatypeProperty ;
+    rdfs:domain ex:OrderItem ;
+    rdfs:range xsd:integer .
+
+ex:unitPrice a owl:DatatypeProperty ;
+    rdfs:domain ex:OrderItem ;
+    rdfs:range xsd:decimal .
+
+ex:discountAmount a owl:DatatypeProperty ;
+    rdfs:domain ex:OrderItem ;
+    rdfs:range xsd:decimal .
+
+############
+# OWL Cardinality Examples
+############
+
+ex:Subscription
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty ex:hasPlan ;
+        owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+        owl:onClass ex:SubscriptionPlan
+    ] .
+
+ex:Order
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty ex:hasOrderItem ;
+        owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+        owl:onClass ex:OrderItem
+    ] .
+
+ex:Payment
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty ex:amount ;
+        owl:cardinality "1"^^xsd:nonNegativeInteger
+    ] .
+
+############
+# Example Instances
+############
+
+ex:PremiumPlan_001 a ex:SubscriptionPlan ;
+    ex:name "프리미엄 구독 플랜" ;
+    ex:price "29000.00"^^xsd:decimal ;
+    ex:currency "KRW" ;
+    ex:billingCycle "MONTHLY" .
+
+ex:Order_1001 a ex:Order ;
+    ex:orderStatus "PAID" ;
+    ex:orderedAt "2026-05-01T10:30:00"^^xsd:dateTime ;
+    ex:containsProduct ex:PremiumPlan_001 ;
+    ex:hasOrderItem ex:OrderItem_001 ;
+    ex:paidBy ex:Payment_5001 .
+
+ex:OrderItem_001 a ex:OrderItem ;
+    ex:itemProduct ex:PremiumPlan_001 ;
+    ex:quantity 1 ;
+    ex:unitPrice "29000.00"^^xsd:decimal ;
+    ex:discountAmount "5000.00"^^xsd:decimal .
+
+ex:Payment_5001 a ex:Payment ;
+    ex:paymentStatus "CAPTURED" ;
+    ex:amount "24000.00"^^xsd:decimal ;
+    ex:paidAt "2026-05-01T10:31:00"^^xsd:dateTime .
+
+ex:Subscription_2001 a ex:Subscription ;
+    ex:subscriptionStatus "ACTIVE" ;
+    ex:startDate "2026-05-01"^^xsd:date ;
+    ex:renewalDate "2026-06-01"^^xsd:date ;
+    ex:hasPlan ex:PremiumPlan_001 .
+
+ex:Event_NewCoupon a ex:CampaignEvent ;
+    ex:name "신규 가입 쿠폰 이벤트" ;
+    ex:eventStartDate "2026-05-01"^^xsd:date ;
+    ex:eventEndDate "2026-05-31"^^xsd:date .
+
+# SHACL로 표현할 수 있는 검증 아이디어:
+# - Product.price >= 0
+# - Product.currency in ("KRW", "USD", "EUR")
+# - SubscriptionPlan.billingCycle in ("MONTHLY", "YEARLY")
+# - Event.eventStartDate <= Event.eventEndDate
+# - OrderItem.quantity >= 1
