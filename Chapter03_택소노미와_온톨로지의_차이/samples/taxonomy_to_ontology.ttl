@@ -1,0 +1,120 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 3강 샘플: 쇼핑몰 택소노미를 온톨로지 관계 네트워크로 확장한 예제
+
+############
+# Taxonomy as Classes
+############
+
+ex:Product a rdfs:Class ;
+    rdfs:label "상품"@ko .
+
+ex:PhysicalProduct a rdfs:Class ;
+    rdfs:subClassOf ex:Product ;
+    rdfs:label "실물 상품"@ko .
+
+ex:DigitalService a rdfs:Class ;
+    rdfs:subClassOf ex:Product ;
+    rdfs:label "디지털 서비스"@ko .
+
+ex:ComputerPeripheral a rdfs:Class ;
+    rdfs:subClassOf ex:PhysicalProduct ;
+    rdfs:label "컴퓨터 주변기기"@ko .
+
+ex:Keyboard a rdfs:Class ;
+    rdfs:subClassOf ex:ComputerPeripheral ;
+    rdfs:label "키보드"@ko .
+
+ex:SubscriptionPlan a rdfs:Class ;
+    rdfs:subClassOf ex:DigitalService ;
+    rdfs:label "구독 플랜"@ko .
+
+ex:Device a rdfs:Class ;
+    rdfs:label "기기"@ko .
+
+ex:CustomerSegment a rdfs:Class ;
+    rdfs:label "고객 세그먼트"@ko .
+
+ex:MarketingEvent a rdfs:Class ;
+    rdfs:label "마케팅 이벤트"@ko .
+
+############
+# Relationship Properties
+############
+
+ex:hasConnectionType a rdf:Property ;
+    rdfs:domain ex:Product ;
+    rdfs:range xsd:string ;
+    rdfs:label "연결 방식을 가진다"@ko .
+
+ex:compatibleWith a rdf:Property ;
+    rdfs:domain ex:Product ;
+    rdfs:range ex:Device ;
+    rdfs:label "호환된다"@ko .
+
+ex:recommendedFor a rdf:Property ;
+    rdfs:domain ex:Product ;
+    rdfs:range ex:CustomerSegment ;
+    rdfs:label "추천 대상이다"@ko .
+
+ex:targets a rdf:Property ;
+    rdfs:domain ex:MarketingEvent ;
+    rdfs:range ex:CustomerSegment ;
+    rdfs:label "대상으로 삼는다"@ko .
+
+ex:availableWith a rdf:Property ;
+    rdfs:domain ex:Product ;
+    rdfs:range ex:SubscriptionPlan ;
+    rdfs:label "함께 제공 가능하다"@ko .
+
+ex:name a rdf:Property ;
+    rdfs:range xsd:string ;
+    rdfs:label "이름"@ko .
+
+ex:price a rdf:Property ;
+    rdfs:domain ex:Product ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "가격"@ko .
+
+############
+# Instances
+############
+
+ex:BluetoothKeyboardK380 a ex:Keyboard ;
+    ex:name "블루투스 무선 키보드 K380" ;
+    ex:price "59000.00"^^xsd:decimal ;
+    ex:hasConnectionType "Bluetooth" ;
+    ex:compatibleWith ex:Tablet ;
+    ex:compatibleWith ex:DesktopPC ;
+    ex:recommendedFor ex:RemoteWorkerSegment ;
+    ex:availableWith ex:PremiumPlan .
+
+ex:Tablet a ex:Device ;
+    ex:name "태블릿" .
+
+ex:DesktopPC a ex:Device ;
+    ex:name "데스크톱 PC" .
+
+ex:RemoteWorkerSegment a ex:CustomerSegment ;
+    ex:name "재택근무 고객군" .
+
+ex:TabletUserSegment a ex:CustomerSegment ;
+    ex:name "태블릿 사용자 고객군" .
+
+ex:SummerEvent a ex:MarketingEvent ;
+    ex:name "여름 업무 생산성 이벤트" ;
+    ex:targets ex:RemoteWorkerSegment ;
+    ex:targets ex:TabletUserSegment .
+
+ex:PremiumPlan a ex:SubscriptionPlan ;
+    ex:name "프리미엄 구독 플랜" ;
+    ex:price "29000.00"^^xsd:decimal .
+
+# 확인 포인트:
+# - Keyboard는 ComputerPeripheral의 하위 클래스다. 이것은 Is-A 관계다.
+# - BluetoothKeyboardK380은 Tablet과 호환된다. 이것은 Is-A 관계가 아니다.
+# - SummerEvent는 RemoteWorkerSegment를 대상으로 한다. 이것은 마케팅 업무 관계다.
+# - PremiumPlan은 Product 계층 안에 있으면서, 다른 상품과 availableWith 관계를 가질 수 있다.

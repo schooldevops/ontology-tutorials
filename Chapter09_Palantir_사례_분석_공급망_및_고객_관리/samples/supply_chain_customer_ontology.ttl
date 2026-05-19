@@ -1,0 +1,222 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 9강 샘플: 공급망 리스크와 고객 관리 연결 온톨로지
+
+############
+# Classes
+############
+
+ex:Supplier a rdfs:Class .
+ex:Part a rdfs:Class .
+ex:Product a rdfs:Class .
+ex:InventoryItem a rdfs:Class .
+ex:Warehouse a rdfs:Class .
+ex:SubscriptionBundle a rdfs:Class .
+ex:Subscription a rdfs:Class .
+ex:CustomerAccount a rdfs:Class .
+ex:CSTicket a rdfs:Class .
+ex:RiskSignal a rdfs:Class .
+ex:Action a rdfs:Class .
+ex:WorkflowCase a rdfs:Class .
+
+############
+# Object Properties
+############
+
+ex:supplies a owl:ObjectProperty ;
+    rdfs:domain ex:Supplier ;
+    rdfs:range ex:Part .
+
+ex:usedIn a owl:ObjectProperty ;
+    rdfs:domain ex:Part ;
+    rdfs:range ex:Product .
+
+ex:stockedAs a owl:ObjectProperty ;
+    rdfs:domain ex:Product ;
+    rdfs:range ex:InventoryItem .
+
+ex:storedAt a owl:ObjectProperty ;
+    rdfs:domain ex:InventoryItem ;
+    rdfs:range ex:Warehouse .
+
+ex:includedIn a owl:ObjectProperty ;
+    rdfs:domain ex:Product ;
+    rdfs:range ex:SubscriptionBundle .
+
+ex:assignedTo a owl:ObjectProperty ;
+    rdfs:domain ex:SubscriptionBundle ;
+    rdfs:range ex:Subscription .
+
+ex:ownedBy a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:CustomerAccount .
+
+ex:raisedBy a owl:ObjectProperty ;
+    rdfs:domain ex:CSTicket ;
+    rdfs:range ex:CustomerAccount .
+
+ex:hasRiskSignal a owl:ObjectProperty ;
+    rdfs:range ex:RiskSignal .
+
+ex:availableAction a owl:ObjectProperty ;
+    rdfs:range ex:Action .
+
+ex:hasWorkflowCase a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:WorkflowCase .
+
+############
+# Data Properties
+############
+
+ex:name a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:status a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:riskLevel a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:stockLevel a owl:DatatypeProperty ;
+    rdfs:domain ex:InventoryItem ;
+    rdfs:range xsd:string .
+
+ex:tier a owl:DatatypeProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range xsd:string .
+
+ex:renewalDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:category a owl:DatatypeProperty ;
+    rdfs:domain ex:CSTicket ;
+    rdfs:range xsd:string .
+
+ex:precondition a owl:DatatypeProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range xsd:string .
+
+ex:effect a owl:DatatypeProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range xsd:string .
+
+############
+# Risk Signals
+############
+
+ex:SupplierDelayRisk a ex:RiskSignal ;
+    ex:name "공급사 지연 리스크" ;
+    ex:riskLevel "HIGH" .
+
+ex:PartShortageRisk a ex:RiskSignal ;
+    ex:name "부품 부족 리스크" ;
+    ex:riskLevel "HIGH" .
+
+ex:FulfillmentRisk a ex:RiskSignal ;
+    ex:name "번들 이행 리스크" ;
+    ex:riskLevel "HIGH" .
+
+ex:CustomerExperienceRisk a ex:RiskSignal ;
+    ex:name "고객 경험 리스크" ;
+    ex:riskLevel "HIGH" .
+
+############
+# Actions
+############
+
+ex:FindAlternativeSupplier a ex:Action ;
+    ex:precondition "Supplier.status = DELAYED" ;
+    ex:effect "Alternative supplier search is opened" .
+
+ex:ReallocateInventory a ex:Action ;
+    ex:precondition "Product.supplyRisk = HIGH and Inventory.stockLevel = LOW" ;
+    ex:effect "Inventory transfer request is created" .
+
+ex:OfferAlternativeBundle a ex:Action ;
+    ex:precondition "Bundle.fulfillmentRisk = HIGH" ;
+    ex:effect "Alternative bundle offer is created" .
+
+ex:NotifyImpactedCustomer a ex:Action ;
+    ex:precondition "Customer.experienceRisk = HIGH" ;
+    ex:effect "Customer notification is sent" .
+
+ex:AssignSeniorRetentionManager a ex:Action ;
+    ex:precondition "Customer.tier = VIP and priority = CRITICAL" ;
+    ex:effect "Senior retention manager is assigned" .
+
+ex:EscalateDeliveryTicket a ex:Action ;
+    ex:precondition "CSTicket.category = DELIVERY_DELAY and Customer.priority = CRITICAL" ;
+    ex:effect "Ticket priority becomes CRITICAL" .
+
+############
+# Object Graph
+############
+
+ex:SupplierA a ex:Supplier ;
+    ex:name "Supplier A" ;
+    ex:status "DELAYED" ;
+    ex:supplies ex:BluetoothModule ;
+    ex:hasRiskSignal ex:SupplierDelayRisk ;
+    ex:availableAction ex:FindAlternativeSupplier .
+
+ex:BluetoothModule a ex:Part ;
+    ex:name "Bluetooth Module" ;
+    ex:status "SHORTAGE" ;
+    ex:usedIn ex:WirelessKeyboard ;
+    ex:hasRiskSignal ex:PartShortageRisk .
+
+ex:WirelessKeyboard a ex:Product ;
+    ex:name "블루투스 무선 키보드" ;
+    ex:status "AT_RISK" ;
+    ex:stockedAs ex:InventoryKeyboardSeoul ;
+    ex:includedIn ex:PremiumWorkBundle ;
+    ex:availableAction ex:ReallocateInventory .
+
+ex:InventoryKeyboardSeoul a ex:InventoryItem ;
+    ex:stockLevel "LOW" ;
+    ex:storedAt ex:SeoulWarehouse .
+
+ex:SeoulWarehouse a ex:Warehouse ;
+    ex:name "서울 물류센터" .
+
+ex:PremiumWorkBundle a ex:SubscriptionBundle ;
+    ex:name "프리미엄 업무 생산성 번들" ;
+    ex:status "FULFILLMENT_RISK" ;
+    ex:assignedTo ex:Subscription_1001 ;
+    ex:hasRiskSignal ex:FulfillmentRisk ;
+    ex:availableAction ex:OfferAlternativeBundle .
+
+ex:Subscription_1001 a ex:Subscription ;
+    ex:status "ACTIVE" ;
+    ex:renewalDate "2026-06-01"^^xsd:date ;
+    ex:ownedBy ex:Customer_001 .
+
+ex:Customer_001 a ex:CustomerAccount ;
+    ex:name "박지훈 계정" ;
+    ex:tier "VIP" ;
+    ex:riskLevel "CRITICAL" ;
+    ex:hasRiskSignal ex:CustomerExperienceRisk ;
+    ex:hasWorkflowCase ex:Workflow_Risk_9001 ;
+    ex:availableAction ex:NotifyImpactedCustomer ;
+    ex:availableAction ex:AssignSeniorRetentionManager .
+
+ex:Ticket_7001 a ex:CSTicket ;
+    ex:status "OPEN" ;
+    ex:category "DELIVERY_DELAY" ;
+    ex:raisedBy ex:Customer_001 ;
+    ex:availableAction ex:EscalateDeliveryTicket .
+
+ex:Workflow_Risk_9001 a ex:WorkflowCase ;
+    ex:status "CRITICAL_CUSTOMER_REVIEW" .
+
+# 분석 경로:
+# SupplierA -> BluetoothModule -> WirelessKeyboard -> PremiumWorkBundle
+# -> Subscription_1001 -> Customer_001 -> Ticket_7001
+#
+# 이 경로는 공급망 문제가 어떤 고객 경험 리스크로 이어지는지 보여준다.

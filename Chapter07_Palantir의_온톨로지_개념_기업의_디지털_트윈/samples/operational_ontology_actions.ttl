@@ -1,0 +1,187 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 7강 샘플: 운영형 온톨로지와 Action 개념 예제
+
+############
+# Object Classes
+############
+
+ex:Person a rdfs:Class ;
+    rdfs:label "사람"@ko .
+
+ex:CustomerAccount a rdfs:Class ;
+    rdfs:label "고객 계정"@ko .
+
+ex:Order a rdfs:Class ;
+    rdfs:label "주문"@ko .
+
+ex:Subscription a rdfs:Class ;
+    rdfs:label "구독"@ko .
+
+ex:SubscriptionPlan a rdfs:Class ;
+    rdfs:label "구독 플랜"@ko .
+
+ex:CSTicket a rdfs:Class ;
+    rdfs:label "CS 티켓"@ko .
+
+ex:CampaignEvent a rdfs:Class ;
+    rdfs:label "캠페인 이벤트"@ko .
+
+ex:Action a rdfs:Class ;
+    rdfs:label "실행 가능한 업무 Action"@ko .
+
+ex:ExternalSystem a rdfs:Class ;
+    rdfs:label "외부 시스템"@ko .
+
+############
+# Relations
+############
+
+ex:ownsAccount a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CustomerAccount .
+
+ex:placesOrder a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Order .
+
+ex:ownsSubscription a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Subscription .
+
+ex:hasPlan a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:SubscriptionPlan .
+
+ex:raisesTicket a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CSTicket .
+
+ex:participatesIn a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CampaignEvent .
+
+ex:influenced a owl:ObjectProperty ;
+    rdfs:domain ex:CampaignEvent ;
+    rdfs:range ex:Subscription .
+
+ex:availableAction a owl:ObjectProperty ;
+    rdfs:range ex:Action ;
+    rdfs:label "실행 가능한 Action"@ko .
+
+ex:writesBackTo a owl:ObjectProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range ex:ExternalSystem ;
+    rdfs:label "외부 시스템에 기록한다"@ko .
+
+############
+# Data Properties
+############
+
+ex:name a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:status a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:ticketType a owl:DatatypeProperty ;
+    rdfs:domain ex:CSTicket ;
+    rdfs:range xsd:string .
+
+ex:renewalDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:riskLevel a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:precondition a owl:DatatypeProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range xsd:string .
+
+ex:effect a owl:DatatypeProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range xsd:string .
+
+############
+# External Systems
+############
+
+ex:SubscriptionSystem a ex:ExternalSystem ;
+    ex:name "Subscription API" .
+
+ex:CRMSystem a ex:ExternalSystem ;
+    ex:name "CRM API" .
+
+ex:CSSystem a ex:ExternalSystem ;
+    ex:name "CS Ticket API" .
+
+############
+# Actions
+############
+
+ex:PauseSubscription a ex:Action ;
+    ex:name "구독 일시정지" ;
+    ex:precondition "Subscription.status = ACTIVE" ;
+    ex:effect "Subscription.status becomes PAUSED" ;
+    ex:writesBackTo ex:SubscriptionSystem .
+
+ex:OfferRetentionDiscount a ex:Action ;
+    ex:name "유지 쿠폰 제안" ;
+    ex:precondition "CustomerAccount.riskLevel = HIGH" ;
+    ex:effect "Retention offer is created in CRM" ;
+    ex:writesBackTo ex:CRMSystem .
+
+ex:EscalateTicket a ex:Action ;
+    ex:name "티켓 에스컬레이션" ;
+    ex:precondition "CSTicket.status = OPEN" ;
+    ex:effect "Ticket priority becomes HIGH" ;
+    ex:writesBackTo ex:CSSystem .
+
+############
+# Object Instances
+############
+
+ex:Person_001 a ex:Person ;
+    ex:name "박지훈" ;
+    ex:ownsAccount ex:Account_001 ;
+    ex:raisesTicket ex:Ticket_7001 ;
+    ex:participatesIn ex:Campaign_NewCoupon .
+
+ex:Account_001 a ex:CustomerAccount ;
+    ex:status "ACTIVE" ;
+    ex:riskLevel "HIGH" ;
+    ex:placesOrder ex:Order_9001 ;
+    ex:ownsSubscription ex:Subscription_1001 ;
+    ex:availableAction ex:OfferRetentionDiscount .
+
+ex:Order_9001 a ex:Order ;
+    ex:status "PAID" .
+
+ex:Subscription_1001 a ex:Subscription ;
+    ex:status "ACTIVE" ;
+    ex:renewalDate "2026-06-01"^^xsd:date ;
+    ex:hasPlan ex:BasicPlan ;
+    ex:availableAction ex:PauseSubscription .
+
+ex:BasicPlan a ex:SubscriptionPlan ;
+    ex:name "베이직 구독 플랜" .
+
+ex:Ticket_7001 a ex:CSTicket ;
+    ex:status "OPEN" ;
+    ex:ticketType "REFUND" ;
+    ex:availableAction ex:EscalateTicket .
+
+ex:Campaign_NewCoupon a ex:CampaignEvent ;
+    ex:name "신규 가입 쿠폰 이벤트" ;
+    ex:influenced ex:Subscription_1001 .
+
+# 확인 포인트:
+# - 온톨로지 객체는 상태와 관계를 가진다.
+# - Action은 실행 조건, 효과, write-back 대상 시스템을 가진다.
+# - 고객 계정의 riskLevel이 HIGH이면 OfferRetentionDiscount Action이 가능하다.
+# - 이 모델은 단순 분석이 아니라 업무 실행까지 연결한다.

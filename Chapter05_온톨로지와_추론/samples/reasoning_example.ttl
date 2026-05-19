@@ -1,0 +1,121 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 5강 샘플: OWL 속성 성질과 간단한 추론 예제
+
+############
+# Classes
+############
+
+ex:Person a rdfs:Class ;
+    rdfs:label "사람"@ko .
+
+ex:Customer a rdfs:Class ;
+    rdfs:subClassOf ex:Person ;
+    rdfs:label "고객"@ko .
+
+ex:VIPCustomer a rdfs:Class ;
+    rdfs:subClassOf ex:Customer ;
+    rdfs:label "VIP 고객"@ko .
+
+ex:Product a rdfs:Class ;
+    rdfs:label "상품"@ko .
+
+ex:DigitalService a rdfs:Class ;
+    rdfs:subClassOf ex:Product ;
+    rdfs:label "디지털 서비스"@ko .
+
+ex:SubscriptionPlan a rdfs:Class ;
+    rdfs:subClassOf ex:DigitalService ;
+    rdfs:label "구독 플랜"@ko .
+
+ex:Order a rdfs:Class ;
+    rdfs:label "주문"@ko .
+
+############
+# Object Properties
+############
+
+ex:placesOrder a owl:ObjectProperty ;
+    rdfs:domain ex:Customer ;
+    rdfs:range ex:Order ;
+    owl:inverseOf ex:orderedBy ;
+    rdfs:label "주문한다"@ko .
+
+ex:orderedBy a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Customer ;
+    rdfs:label "주문자이다"@ko .
+
+ex:containsProduct a owl:ObjectProperty ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Product ;
+    rdfs:label "상품을 포함한다"@ko .
+
+ex:compatibleWith a owl:ObjectProperty , owl:SymmetricProperty ;
+    rdfs:domain ex:Product ;
+    rdfs:range ex:Product ;
+    rdfs:label "호환된다"@ko .
+
+ex:hasAncestor a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:Person ;
+    rdfs:label "조상 관계를 가진다"@ko .
+
+############
+# Data Properties
+############
+
+ex:name a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "이름"@ko .
+
+ex:subscriptionDurationMonths a owl:DatatypeProperty ;
+    rdfs:domain ex:Customer ;
+    rdfs:range xsd:integer ;
+    rdfs:label "구독 유지 개월 수"@ko .
+
+ex:totalPurchaseAmount a owl:DatatypeProperty ;
+    rdfs:domain ex:Customer ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "누적 구매액"@ko .
+
+############
+# Instances
+############
+
+ex:U001 a ex:Customer ;
+    ex:name "김민준" ;
+    ex:subscriptionDurationMonths 8 ;
+    ex:totalPurchaseAmount "730000.00"^^xsd:decimal ;
+    ex:placesOrder ex:O1001 .
+
+ex:O1001 a ex:Order ;
+    ex:containsProduct ex:P001 .
+
+ex:P001 a ex:SubscriptionPlan ;
+    ex:name "프리미엄 구독 플랜" .
+
+ex:P002 a ex:Product ;
+    ex:name "무선 키보드" ;
+    ex:compatibleWith ex:P003 .
+
+ex:P003 a ex:Product ;
+    ex:name "태블릿 거치대" .
+
+# 추론으로 기대할 수 있는 사실:
+# 1. ex:P001 type ex:DigitalService
+# 2. ex:P001 type ex:Product
+# 3. ex:O1001 ex:orderedBy ex:U001
+# 4. ex:P003 ex:compatibleWith ex:P002
+#
+# 아래 VIP 추론은 OWL 속성 성질만으로는 충분하지 않고,
+# 별도 룰 엔진 또는 SWRL 같은 규칙 표현이 필요하다.
+#
+# Rule idea:
+# Customer(?c) AND subscriptionDurationMonths(?c, ?m) AND totalPurchaseAmount(?c, ?a)
+# AND ?m >= 6 AND ?a >= 500000
+# => VIPCustomer(?c)

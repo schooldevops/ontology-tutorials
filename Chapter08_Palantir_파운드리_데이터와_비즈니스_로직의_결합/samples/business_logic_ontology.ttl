@@ -1,0 +1,217 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 8강 샘플: 온톨로지 객체에 Rule, Action, Workflow, Write-back을 연결한 예제
+
+############
+# Core Classes
+############
+
+ex:CustomerAccount a rdfs:Class .
+ex:Subscription a rdfs:Class .
+ex:Payment a rdfs:Class .
+ex:CSTicket a rdfs:Class .
+ex:RetentionOffer a rdfs:Class .
+ex:WorkflowCase a rdfs:Class .
+ex:Rule a rdfs:Class .
+ex:Action a rdfs:Class .
+ex:ExternalSystem a rdfs:Class .
+ex:AuditLog a rdfs:Class .
+
+############
+# Object Properties
+############
+
+ex:ownsSubscription a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Subscription .
+
+ex:hasPayment a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:Payment .
+
+ex:hasTicket a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:CSTicket .
+
+ex:availableAction a owl:ObjectProperty ;
+    rdfs:range ex:Action .
+
+ex:triggeredByRule a owl:ObjectProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range ex:Rule .
+
+ex:writesBackTo a owl:ObjectProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range ex:ExternalSystem .
+
+ex:hasWorkflowCase a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:WorkflowCase .
+
+ex:hasAuditLog a owl:ObjectProperty ;
+    rdfs:range ex:AuditLog .
+
+ex:createsOffer a owl:ObjectProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range ex:RetentionOffer .
+
+############
+# Data Properties
+############
+
+ex:status a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+ex:riskLevel a owl:DatatypeProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range xsd:string .
+
+ex:renewalDate a owl:DatatypeProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range xsd:date .
+
+ex:ticketType a owl:DatatypeProperty ;
+    rdfs:domain ex:CSTicket ;
+    rdfs:range xsd:string .
+
+ex:condition a owl:DatatypeProperty ;
+    rdfs:domain ex:Rule ;
+    rdfs:range xsd:string .
+
+ex:result a owl:DatatypeProperty ;
+    rdfs:domain ex:Rule ;
+    rdfs:range xsd:string .
+
+ex:precondition a owl:DatatypeProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range xsd:string .
+
+ex:effect a owl:DatatypeProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range xsd:string .
+
+ex:requiresApproval a owl:DatatypeProperty ;
+    rdfs:domain ex:Action ;
+    rdfs:range xsd:boolean .
+
+ex:actor a owl:DatatypeProperty ;
+    rdfs:domain ex:AuditLog ;
+    rdfs:range xsd:string .
+
+ex:reason a owl:DatatypeProperty ;
+    rdfs:range xsd:string .
+
+############
+# External Systems
+############
+
+ex:CRMSystem a ex:ExternalSystem ;
+    ex:status "ONLINE" .
+
+ex:MarketingSystem a ex:ExternalSystem ;
+    ex:status "ONLINE" .
+
+ex:PaymentGateway a ex:ExternalSystem ;
+    ex:status "ONLINE" .
+
+ex:CSSystem a ex:ExternalSystem ;
+    ex:status "ONLINE" .
+
+############
+# Rules
+############
+
+ex:R001_PaymentFailureRisk a ex:Rule ;
+    ex:condition "Payment.status = FAILED and Subscription.status = ACTIVE" ;
+    ex:result "riskSignal = PAYMENT_FAILURE" .
+
+ex:R002_RenewalSoon a ex:Rule ;
+    ex:condition "Subscription.renewalDate <= 30 days" ;
+    ex:result "riskSignal = RENEWAL_SOON" .
+
+ex:R003_OpenPaymentTicket a ex:Rule ;
+    ex:condition "CSTicket.type = PAYMENT_FAILURE and CSTicket.status = OPEN" ;
+    ex:result "riskSignal = OPEN_PAYMENT_TICKET" .
+
+ex:R004_HighRiskRetentionTarget a ex:Rule ;
+    ex:condition "R001 and R002 and R003 are true" ;
+    ex:result "CustomerAccount.riskLevel = HIGH" .
+
+############
+# Actions
+############
+
+ex:AssignRetentionManager a ex:Action ;
+    ex:triggeredByRule ex:R004_HighRiskRetentionTarget ;
+    ex:precondition "CustomerAccount.riskLevel = HIGH" ;
+    ex:effect "Retention manager is assigned" ;
+    ex:requiresApproval false ;
+    ex:writesBackTo ex:CRMSystem .
+
+ex:OfferRetentionDiscount a ex:Action ;
+    ex:triggeredByRule ex:R004_HighRiskRetentionTarget ;
+    ex:precondition "CustomerAccount.riskLevel = HIGH and Subscription.status = ACTIVE" ;
+    ex:effect "Retention offer is created and sent" ;
+    ex:requiresApproval true ;
+    ex:writesBackTo ex:CRMSystem ;
+    ex:writesBackTo ex:MarketingSystem .
+
+ex:RetryPayment a ex:Action ;
+    ex:triggeredByRule ex:R001_PaymentFailureRisk ;
+    ex:precondition "Payment.status = FAILED" ;
+    ex:effect "Payment retry is requested" ;
+    ex:requiresApproval false ;
+    ex:writesBackTo ex:PaymentGateway .
+
+ex:EscalateTicket a ex:Action ;
+    ex:triggeredByRule ex:R003_OpenPaymentTicket ;
+    ex:precondition "CSTicket.status = OPEN" ;
+    ex:effect "Ticket priority becomes HIGH" ;
+    ex:requiresApproval false ;
+    ex:writesBackTo ex:CSSystem .
+
+############
+# Example Object Graph
+############
+
+ex:Account_010 a ex:CustomerAccount ;
+    ex:status "ACTIVE" ;
+    ex:riskLevel "HIGH" ;
+    ex:ownsSubscription ex:Subscription_5010 ;
+    ex:hasTicket ex:Ticket_5010 ;
+    ex:hasWorkflowCase ex:Workflow_9001 ;
+    ex:availableAction ex:AssignRetentionManager ;
+    ex:availableAction ex:OfferRetentionDiscount .
+
+ex:Subscription_5010 a ex:Subscription ;
+    ex:status "ACTIVE" ;
+    ex:renewalDate "2026-06-15"^^xsd:date ;
+    ex:hasPayment ex:Payment_8001 ;
+    ex:availableAction ex:RetryPayment .
+
+ex:Payment_8001 a ex:Payment ;
+    ex:status "FAILED" .
+
+ex:Ticket_5010 a ex:CSTicket ;
+    ex:status "OPEN" ;
+    ex:ticketType "PAYMENT_FAILURE" ;
+    ex:availableAction ex:EscalateTicket .
+
+ex:Workflow_9001 a ex:WorkflowCase ;
+    ex:status "OFFER_SENT" .
+
+ex:Audit_0001 a ex:AuditLog ;
+    ex:actor "agent_01" ;
+    ex:reason "High-risk retention workflow triggered by payment failure" .
+
+ex:Account_010 ex:hasAuditLog ex:Audit_0001 .
+
+# 확인 포인트:
+# - Rule은 판단 조건과 결과를 가진다.
+# - Action은 Rule에 의해 추천되거나 활성화된다.
+# - Action은 precondition, effect, approval, write-back 대상을 가진다.
+# - WorkflowCase와 AuditLog는 운영 이력을 추적한다.

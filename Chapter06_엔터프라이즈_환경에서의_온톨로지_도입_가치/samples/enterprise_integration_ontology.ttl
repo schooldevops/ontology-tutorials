@@ -1,0 +1,217 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 6강 샘플: 엔터프라이즈 용어 통합을 위한 온톨로지 예제
+
+############
+# Core Classes
+############
+
+ex:Person a rdfs:Class ;
+    rdfs:label "사람"@ko ;
+    rdfs:comment "개별 자연인을 나타내는 전사 공통 개념"@ko .
+
+ex:CustomerAccount a rdfs:Class ;
+    rdfs:label "고객 계정"@ko ;
+    rdfs:comment "서비스 이용과 거래를 수행하는 계정 단위"@ko .
+
+ex:Role a rdfs:Class ;
+    rdfs:label "역할"@ko .
+
+ex:BuyerRole a rdfs:Class ;
+    rdfs:subClassOf ex:Role ;
+    rdfs:label "구매자 역할"@ko .
+
+ex:SubscriberRole a rdfs:Class ;
+    rdfs:subClassOf ex:Role ;
+    rdfs:label "구독자 역할"@ko .
+
+ex:RequesterRole a rdfs:Class ;
+    rdfs:subClassOf ex:Role ;
+    rdfs:label "문의자 역할"@ko .
+
+ex:Order a rdfs:Class ;
+    rdfs:label "주문"@ko .
+
+ex:Subscription a rdfs:Class ;
+    rdfs:label "구독"@ko .
+
+ex:SubscriptionPlan a rdfs:Class ;
+    rdfs:label "구독 플랜"@ko .
+
+ex:CSTicket a rdfs:Class ;
+    rdfs:label "CS 티켓"@ko .
+
+ex:CampaignEvent a rdfs:Class ;
+    rdfs:label "캠페인 이벤트"@ko .
+
+ex:SourceSystemEntity a rdfs:Class ;
+    rdfs:label "소스 시스템 엔티티"@ko .
+
+############
+# Source System Classes
+############
+
+ex:CRMCustomer a rdfs:Class ;
+    rdfs:subClassOf ex:SourceSystemEntity ;
+    rdfs:label "CRM Customer" .
+
+ex:CommerceUser a rdfs:Class ;
+    rdfs:subClassOf ex:SourceSystemEntity ;
+    rdfs:label "Commerce User" .
+
+ex:SubscriptionSubscriber a rdfs:Class ;
+    rdfs:subClassOf ex:SourceSystemEntity ;
+    rdfs:label "Subscription Subscriber" .
+
+ex:CSRequester a rdfs:Class ;
+    rdfs:subClassOf ex:SourceSystemEntity ;
+    rdfs:label "CS Requester" .
+
+ex:MarketingAudience a rdfs:Class ;
+    rdfs:subClassOf ex:SourceSystemEntity ;
+    rdfs:label "Marketing Audience" .
+
+############
+# Object Properties
+############
+
+ex:ownsAccount a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CustomerAccount ;
+    rdfs:label "계정을 소유한다"@ko .
+
+ex:playsRole a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:Role ;
+    rdfs:label "역할을 가진다"@ko .
+
+ex:placesOrder a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Order ;
+    rdfs:label "주문한다"@ko .
+
+ex:ownsSubscription a owl:ObjectProperty ;
+    rdfs:domain ex:CustomerAccount ;
+    rdfs:range ex:Subscription ;
+    rdfs:label "구독을 가진다"@ko .
+
+ex:hasPlan a owl:ObjectProperty ;
+    rdfs:domain ex:Subscription ;
+    rdfs:range ex:SubscriptionPlan ;
+    rdfs:label "플랜을 가진다"@ko .
+
+ex:raisesTicket a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CSTicket ;
+    rdfs:label "문의 티켓을 생성한다"@ko .
+
+ex:participatesIn a owl:ObjectProperty ;
+    rdfs:domain ex:Person ;
+    rdfs:range ex:CampaignEvent ;
+    rdfs:label "캠페인에 참여한다"@ko .
+
+ex:influences a owl:ObjectProperty ;
+    rdfs:domain ex:CampaignEvent ;
+    rdfs:range ex:Subscription ;
+    rdfs:label "영향을 준다"@ko .
+
+ex:mapsToCoreEntity a owl:ObjectProperty ;
+    rdfs:domain ex:SourceSystemEntity ;
+    rdfs:range owl:Thing ;
+    rdfs:label "공통 엔티티에 매핑된다"@ko .
+
+############
+# Data Properties
+############
+
+ex:sourceSystem a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "소스 시스템"@ko .
+
+ex:sourceId a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "소스 식별자"@ko .
+
+ex:name a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "이름"@ko .
+
+ex:status a owl:DatatypeProperty ;
+    rdfs:range xsd:string ;
+    rdfs:label "상태"@ko .
+
+############
+# Example Integrated Instances
+############
+
+ex:Person_001 a ex:Person ;
+    ex:name "박지훈" ;
+    ex:ownsAccount ex:Account_001 ;
+    ex:playsRole ex:Role_Buyer_001 ;
+    ex:playsRole ex:Role_Subscriber_001 ;
+    ex:playsRole ex:Role_Requester_001 ;
+    ex:participatesIn ex:Campaign_NewCoupon .
+
+ex:Account_001 a ex:CustomerAccount ;
+    ex:status "ACTIVE" ;
+    ex:placesOrder ex:Order_9001 ;
+    ex:ownsSubscription ex:Subscription_1001 .
+
+ex:Role_Buyer_001 a ex:BuyerRole .
+
+ex:Role_Subscriber_001 a ex:SubscriberRole .
+
+ex:Role_Requester_001 a ex:RequesterRole .
+
+ex:Subscription_1001 a ex:Subscription ;
+    ex:status "ACTIVE" ;
+    ex:hasPlan ex:BasicPlan .
+
+ex:BasicPlan a ex:SubscriptionPlan ;
+    ex:name "베이직 구독 플랜" .
+
+ex:Order_9001 a ex:Order ;
+    ex:status "PAID" .
+
+ex:Ticket_7001 a ex:CSTicket ;
+    ex:status "REFUND_REQUESTED" .
+
+ex:Person_001 ex:raisesTicket ex:Ticket_7001 .
+
+ex:Campaign_NewCoupon a ex:CampaignEvent ;
+    ex:name "신규 가입 쿠폰 이벤트" ;
+    ex:influences ex:Subscription_1001 .
+
+############
+# Source Entity Mapping Examples
+############
+
+ex:CRM_C001 a ex:CRMCustomer ;
+    ex:sourceSystem "CRM" ;
+    ex:sourceId "C001" ;
+    ex:mapsToCoreEntity ex:Person_001 .
+
+ex:COM_U003 a ex:CommerceUser ;
+    ex:sourceSystem "Commerce" ;
+    ex:sourceId "U003" ;
+    ex:mapsToCoreEntity ex:Account_001 .
+
+ex:SUB_S001 a ex:SubscriptionSubscriber ;
+    ex:sourceSystem "Subscription" ;
+    ex:sourceId "S001" ;
+    ex:mapsToCoreEntity ex:Role_Subscriber_001 .
+
+ex:CS_R901 a ex:CSRequester ;
+    ex:sourceSystem "CS" ;
+    ex:sourceId "R901" ;
+    ex:mapsToCoreEntity ex:Role_Requester_001 .
+
+# 확인 포인트:
+# - Person과 CustomerAccount를 분리했다.
+# - Subscriber, Requester는 사람 자체가 아니라 역할로 모델링했다.
+# - 소스 시스템의 엔티티는 공통 온톨로지 개념에 매핑된다.
+# - Campaign, Subscription, Ticket이 같은 Person/Account를 중심으로 연결된다.

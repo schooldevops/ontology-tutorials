@@ -1,0 +1,120 @@
+@prefix ex: <https://example.com/ontology/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# 4강 샘플: RDF, RDFS, OWL을 한 파일에서 구분해 보기
+
+############
+# OWL Ontology Declaration
+############
+
+ex:CommerceOntology a owl:Ontology ;
+    rdfs:label "커머스 온톨로지 예제"@ko .
+
+############
+# RDFS: Classes
+############
+
+ex:Customer a rdfs:Class ;
+    rdfs:label "고객"@ko .
+
+ex:Product a rdfs:Class ;
+    rdfs:label "상품"@ko .
+
+ex:PhysicalProduct a rdfs:Class ;
+    rdfs:subClassOf ex:Product ;
+    rdfs:label "실물 상품"@ko .
+
+ex:DigitalService a rdfs:Class ;
+    rdfs:subClassOf ex:Product ;
+    rdfs:label "디지털 서비스"@ko .
+
+ex:SubscriptionPlan a rdfs:Class ;
+    rdfs:subClassOf ex:DigitalService ;
+    rdfs:label "구독 플랜"@ko .
+
+ex:Order a rdfs:Class ;
+    rdfs:label "주문"@ko .
+
+ex:MarketingEvent a rdfs:Class ;
+    rdfs:label "마케팅 이벤트"@ko .
+
+############
+# OWL: Class Constraints
+############
+
+ex:PhysicalProduct owl:disjointWith ex:DigitalService .
+
+############
+# RDFS: Properties
+############
+
+ex:placesOrder a rdf:Property ;
+    rdfs:domain ex:Customer ;
+    rdfs:range ex:Order ;
+    rdfs:label "주문한다"@ko .
+
+ex:orderedBy a rdf:Property ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Customer ;
+    rdfs:label "주문자이다"@ko .
+
+ex:containsProduct a rdf:Property ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:Product ;
+    rdfs:label "상품을 포함한다"@ko .
+
+ex:influencedBy a rdf:Property ;
+    rdfs:domain ex:Order ;
+    rdfs:range ex:MarketingEvent ;
+    rdfs:label "영향을 받았다"@ko .
+
+ex:name a rdf:Property ;
+    rdfs:range xsd:string ;
+    rdfs:label "이름"@ko .
+
+ex:price a rdf:Property ;
+    rdfs:domain ex:Product ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "가격"@ko .
+
+ex:status a rdf:Property ;
+    rdfs:domain ex:Order ;
+    rdfs:range xsd:string ;
+    rdfs:label "상태"@ko .
+
+############
+# OWL: Property Semantics
+############
+
+ex:placesOrder owl:inverseOf ex:orderedBy .
+
+############
+# RDF: Instances and Facts
+############
+
+ex:U001 a ex:Customer ;
+    ex:name "김민준" ;
+    ex:placesOrder ex:O1001 .
+
+ex:P001 a ex:SubscriptionPlan ;
+    ex:name "프리미엄 구독 플랜" ;
+    ex:price "29000.00"^^xsd:decimal .
+
+ex:O1001 a ex:Order ;
+    ex:status "PAID" ;
+    ex:containsProduct ex:P001 ;
+    ex:influencedBy ex:E001 .
+
+ex:E001 a ex:MarketingEvent ;
+    ex:name "5월 구독 전환 캠페인" .
+
+# 추론 관점에서 읽기:
+# - ex:P001은 ex:SubscriptionPlan이다.
+# - ex:SubscriptionPlan은 ex:DigitalService의 하위 클래스다.
+# - ex:DigitalService는 ex:Product의 하위 클래스다.
+# - 따라서 ex:P001은 상품으로도 취급할 수 있다.
+# - ex:U001 placesOrder ex:O1001이 있으므로,
+#   OWL inverseOf 정의를 사용하면 ex:O1001 orderedBy ex:U001을 추론할 수 있다.
