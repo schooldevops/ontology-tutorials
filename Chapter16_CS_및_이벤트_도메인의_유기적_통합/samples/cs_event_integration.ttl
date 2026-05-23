@@ -1,0 +1,77 @@
+@prefix : <http://example.org/ontology/commerce#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ----------------------------------------
+# Ontology Declaration
+# ----------------------------------------
+<http://example.org/ontology/commerce> rdf:type owl:Ontology ;
+    rdfs:comment "이벤트, 구독, CS 도메인 통합 온톨로지 모델" .
+
+# ----------------------------------------
+# Classes
+# ----------------------------------------
+:User rdf:type owl:Class ;
+    rdfs:label "User" .
+
+:Event rdf:type owl:Class ;
+    rdfs:label "Event" .
+
+:Subscription rdf:type owl:Class ;
+    rdfs:label "Subscription" .
+
+:CSTicket rdf:type owl:Class ;
+    rdfs:label "CS Ticket" .
+
+# ----------------------------------------
+# Object Properties
+# ----------------------------------------
+:participatedIn rdf:type owl:ObjectProperty ;
+    rdfs:domain :User ;
+    rdfs:range :Event .
+
+:belongsTo rdf:type owl:ObjectProperty ;
+    rdfs:domain :Subscription ;
+    rdfs:range :User .
+
+:attributedTo rdf:type owl:ObjectProperty ;
+    rdfs:domain :Subscription ;
+    rdfs:range :Event .
+
+:raisedBy rdf:type owl:ObjectProperty ;
+    rdfs:domain :CSTicket ;
+    rdfs:range :User .
+
+:relatesTo rdf:type owl:ObjectProperty ;
+    rdfs:domain :CSTicket ;
+    rdfs:range :Subscription .
+
+:mightBeCausedBy rdf:type owl:ObjectProperty ;
+    rdfs:domain :CSTicket ;
+    rdfs:range :Event ;
+    rdfs:comment "Inferred property linking a ticket to an event" .
+
+# ----------------------------------------
+# Data Properties
+# ----------------------------------------
+:ticketType rdf:type owl:DatatypeProperty ;
+    rdfs:domain :CSTicket ;
+    rdfs:range xsd:string .
+
+# ----------------------------------------
+# Individuals (Instances)
+# ----------------------------------------
+:User_Alice rdf:type :User .
+:Event_BlackFriday rdf:type :Event .
+:Sub_Premium_001 rdf:type :Subscription .
+:Ticket_Refund_888 rdf:type :CSTicket .
+
+# Properties
+:User_Alice :participatedIn :Event_BlackFriday .
+:Sub_Premium_001 :belongsTo :User_Alice .
+:Sub_Premium_001 :attributedTo :Event_BlackFriday .
+:Ticket_Refund_888 :raisedBy :User_Alice .
+:Ticket_Refund_888 :relatesTo :Sub_Premium_001 .
+:Ticket_Refund_888 :ticketType "RefundRequest" .

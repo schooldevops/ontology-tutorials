@@ -1,0 +1,65 @@
+@prefix : <http://example.org/ontology/commerce#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix swrl: <http://www.w3.org/2003/11/swrl#> .
+@prefix swrlb: <http://www.w3.org/2003/11/swrlb#> .
+
+# ----------------------------------------
+# Ontology Declaration
+# ----------------------------------------
+<http://example.org/ontology/commerce> rdf:type owl:Ontology ;
+    rdfs:comment "비즈니스 룰 및 커스텀 추론 규칙 예제 (SWRL 적용)" .
+
+# ----------------------------------------
+# Classes
+# ----------------------------------------
+:User rdf:type owl:Class .
+:Subscription rdf:type owl:Class .
+
+# 추론에 의해 분류될 서브클래스
+:VIPUser rdf:type owl:Class ;
+    rdfs:subClassOf :User ;
+    rdfs:label "VIP User" .
+
+# ----------------------------------------
+# Properties
+# ----------------------------------------
+:hasSubscription rdf:type owl:ObjectProperty ;
+    rdfs:domain :User ;
+    rdfs:range :Subscription .
+
+:hasStatus rdf:type owl:DatatypeProperty ;
+    rdfs:domain :Subscription ;
+    rdfs:range xsd:string .
+
+:monthsActive rdf:type owl:DatatypeProperty ;
+    rdfs:domain :Subscription ;
+    rdfs:range xsd:integer .
+
+:totalSpent rdf:type owl:DatatypeProperty ;
+    rdfs:domain :User ;
+    rdfs:range xsd:integer .
+
+# ----------------------------------------
+# Individuals (Facts)
+# ----------------------------------------
+:User_Bob rdf:type :User ;
+    :totalSpent 600 ;
+    :hasSubscription :Sub_Basic_002 .
+
+:Sub_Basic_002 rdf:type :Subscription ;
+    :hasStatus "Active" ;
+    :monthsActive 8 .
+
+# ----------------------------------------
+# SWRL Rule (Conceptual representation in TTL format)
+# (참고: Protégé 등의 에디터에서는 전용 SWRL 탭을 통해 입력됩니다)
+# ----------------------------------------
+# Rule: If User has an Active Subscription >= 6 months and totalSpent >= 500 -> User is VIPUser
+# 
+# User(?u) ^ hasSubscription(?u, ?s) ^ Subscription(?s) ^ hasStatus(?s, "Active") ^ 
+# monthsActive(?s, ?m) ^ swrlb:greaterThanOrEqual(?m, 6) ^ 
+# totalSpent(?u, ?t) ^ swrlb:greaterThanOrEqual(?t, 500) 
+# -> VIPUser(?u)

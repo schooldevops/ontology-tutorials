@@ -1,0 +1,57 @@
+@prefix : <http://example.org/ontology/commerce#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ----------------------------------------
+# Ontology Declaration
+# ----------------------------------------
+<http://example.org/ontology/commerce> rdf:type owl:Ontology ;
+    rdfs:comment "온톨로지 정합성 검증 테스트 파일 (의도적인 모순 포함)" .
+
+# ----------------------------------------
+# Classes and Disjointness (TBox)
+# ----------------------------------------
+:Subscription rdf:type owl:Class .
+
+:ActiveSubscription rdf:type owl:Class ;
+    rdfs:subClassOf :Subscription ;
+    owl:disjointWith :CancelledSubscription .
+
+:CancelledSubscription rdf:type owl:Class ;
+    rdfs:subClassOf :Subscription .
+
+# ----------------------------------------
+# Properties (TBox)
+# ----------------------------------------
+# Functional Property: 주어 하나당 목적어 하나만 가져야 함
+:hasMainSubscriber rdf:type owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:domain :Subscription ;
+    rdfs:range :User .
+
+:User rdf:type owl:Class .
+
+# ----------------------------------------
+# Individuals & Inconsistent Data (ABox)
+# ----------------------------------------
+
+# [모순 케이스 1: Disjoint 위반]
+# 동일한 구독(Sub_001)이 상호 배타적인 두 클래스에 동시에 속함
+:Sub_001 rdf:type :ActiveSubscription .
+:Sub_001 rdf:type :CancelledSubscription .
+
+# [모순 케이스 2: Functional Property 위반]
+# hasMainSubscriber는 단일값이어야 하는데, 서로 다른 두 유저가 할당됨
+:Sub_002 rdf:type :Subscription .
+:User_Alice rdf:type :User .
+:User_Bob rdf:type :User .
+
+# 명시적으로 두 유저가 다른 사람임을 선언
+:User_Alice owl:differentFrom :User_Bob .
+
+:Sub_002 :hasMainSubscriber :User_Alice .
+:Sub_002 :hasMainSubscriber :User_Bob .
+
+# 위 파일을 Protégé와 같은 에디터에서 열고 Pellet 또는 HermiT 추론기를 실행하면
+# Inconsistent Ontology 에러가 발생합니다.

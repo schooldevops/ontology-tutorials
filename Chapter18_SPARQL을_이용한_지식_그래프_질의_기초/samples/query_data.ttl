@@ -1,0 +1,58 @@
+@prefix : <http://example.org/ontology/commerce#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ----------------------------------------
+# Ontology & Classes
+# ----------------------------------------
+<http://example.org/ontology/commerce> rdf:type owl:Ontology .
+
+:User rdf:type owl:Class .
+:Event rdf:type owl:Class .
+:Subscription rdf:type owl:Class .
+
+# ----------------------------------------
+# Properties
+# ----------------------------------------
+:hasName rdf:type owl:DatatypeProperty ; rdfs:domain :User ; rdfs:range xsd:string .
+:hasPhone rdf:type owl:DatatypeProperty ; rdfs:domain :User ; rdfs:range xsd:string .
+:totalSpent rdf:type owl:DatatypeProperty ; rdfs:domain :User ; rdfs:range xsd:integer .
+:hasStatus rdf:type owl:DatatypeProperty ; rdfs:domain :Subscription ; rdfs:range xsd:string .
+:hasSubscriptionId rdf:type owl:DatatypeProperty ; rdfs:domain :Subscription ; rdfs:range xsd:string .
+
+:hasSubscription rdf:type owl:ObjectProperty ; rdfs:domain :User ; rdfs:range :Subscription .
+:belongsTo rdf:type owl:ObjectProperty ; owl:inverseOf :hasSubscription .
+:attributedTo rdf:type owl:ObjectProperty ; rdfs:domain :Subscription ; rdfs:range :Event .
+
+# ----------------------------------------
+# Data (Facts) for Testing SPARQL
+# ----------------------------------------
+:Event_BlackFriday rdf:type :Event .
+:Event_NewYear rdf:type :Event .
+
+# User 1: Alice (VIP 조건 충족, BlackFriday 유입, 전화번호 있음)
+:User_Alice rdf:type :User ;
+    :hasName "Alice" ;
+    :totalSpent 800 ;
+    :hasPhone "010-1111-2222" ;
+    :hasSubscription :Sub_001 .
+
+:Sub_001 rdf:type :Subscription ;
+    :hasSubscriptionId "SUB-ALICE-1" ;
+    :hasStatus "Active" ;
+    :attributedTo :Event_BlackFriday ;
+    :belongsTo :User_Alice .
+
+# User 2: Bob (조건 미달, NewYear 유입, 전화번호 없음)
+:User_Bob rdf:type :User ;
+    :hasName "Bob" ;
+    :totalSpent 100 ;
+    :hasSubscription :Sub_002 .
+
+:Sub_002 rdf:type :Subscription ;
+    :hasSubscriptionId "SUB-BOB-1" ;
+    :hasStatus "Paused" ;
+    :attributedTo :Event_NewYear ;
+    :belongsTo :User_Bob .

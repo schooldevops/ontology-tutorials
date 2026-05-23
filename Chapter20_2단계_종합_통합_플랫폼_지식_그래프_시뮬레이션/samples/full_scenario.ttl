@@ -1,0 +1,60 @@
+@prefix : <http://example.org/ontology/commerce#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ----------------------------------------
+# 1. Ontology Declaration (Phase 2 종합)
+# ----------------------------------------
+<http://example.org/ontology/commerce> rdf:type owl:Ontology ;
+    rdfs:comment "Phase 2 최종 통합 시뮬레이션 지식 그래프" .
+
+# ----------------------------------------
+# 2. Classes
+# ----------------------------------------
+:User rdf:type owl:Class .
+:Event rdf:type owl:Class .
+:Subscription rdf:type owl:Class .
+:SubscriptionPlan rdf:type owl:Class .
+:CSTicket rdf:type owl:Class .
+
+# ----------------------------------------
+# 3. Object Properties
+# ----------------------------------------
+:participatedIn rdf:type owl:ObjectProperty ; rdfs:domain :User ; rdfs:range :Event .
+:belongsTo rdf:type owl:ObjectProperty ; rdfs:domain :Subscription ; rdfs:range :User .
+:attributedTo rdf:type owl:ObjectProperty ; rdfs:domain :Subscription ; rdfs:range :Event .
+:hasPlanType rdf:type owl:ObjectProperty ; rdfs:domain :Subscription ; rdfs:range :SubscriptionPlan .
+:raisedBy rdf:type owl:ObjectProperty ; rdfs:domain :CSTicket ; rdfs:range :User .
+:relatesTo rdf:type owl:ObjectProperty ; rdfs:domain :CSTicket ; rdfs:range :Subscription .
+
+# ----------------------------------------
+# 4. Data Properties
+# ----------------------------------------
+:hasStatus rdf:type owl:DatatypeProperty ; rdfs:domain :Subscription ; rdfs:range xsd:string .
+:ticketIssue rdf:type owl:DatatypeProperty ; rdfs:domain :CSTicket ; rdfs:range xsd:string .
+
+# ----------------------------------------
+# 5. 시뮬레이션 인스턴스 (Data)
+# ----------------------------------------
+# [Event & Plan]
+:YearEnd_Promo rdf:type :Event .
+:Plan_Premium rdf:type :SubscriptionPlan .
+
+# [User]
+:User_David rdf:type :User .
+:User_David :participatedIn :YearEnd_Promo .
+
+# [Subscription]
+:Sub_David_01 rdf:type :Subscription ;
+    :belongsTo :User_David ;
+    :attributedTo :YearEnd_Promo ;
+    :hasPlanType :Plan_Premium ;
+    :hasStatus "GracePeriod" .  # 결제 실패로 인한 유예 상태 가정
+
+# [CS Ticket]
+:Ticket_999 rdf:type :CSTicket ;
+    :raisedBy :User_David ;
+    :relatesTo :Sub_David_01 ;
+    :ticketIssue "RefundRequest" .
